@@ -50,7 +50,6 @@ def generate_demo_data():
                 "Condition": random.choice(["Excellent", "Good", "Fair", "Needs Renovation"]),
                 "ROI (%)": round(random.uniform(5, 15), 2),
                 "Additional Details": f"Details for {investment_type} deal {i+1}. Lorem ipsum...",
-                # Add more details as needed
             }
             deals.append(deal)
     return pd.DataFrame(deals)
@@ -75,25 +74,16 @@ def create_distribution_chart(data, x_column, title):
     ).properties(width=800, height=400)
     return chart
 
-# Function to create heatmap
-def create_heatmap(data):
-    heatmap = alt.Chart(data).mark_rect().encode(
-        x=alt.X("Bedrooms:O", title="Bedrooms"),
-        y=alt.Y("Bathrooms:O", title="Bathrooms"),
-        color=alt.Color("mean(Price):Q", scale=alt.Scale(scheme="reds")),
-        tooltip=["mean(Price)"],
-    ).properties(width=400, height=400)
-    return heatmap
-
-# Function to create line chart
-def create_line_chart(data):
-    line_chart = alt.Chart(data).mark_line().encode(
-        x=alt.X("Year Built:O", title="Year Built"),
-        y=alt.Y("mean(ROI (%)):Q", title="Average ROI (%)"),
+# Function to create scatter plot for property locations
+def create_scatter_plot(data):
+    scatter_chart = alt.Chart(data).mark_circle().encode(
+        latitude="Location:N",
+        longitude="Investment Type:N",
+        size=alt.Size("Price:Q", scale=alt.Scale(range=[100, 500])),
         color=alt.Color("Investment Type:N", legend=None),
-        tooltip=["mean(ROI (%))"],
+        tooltip=["Deal ID", "Price", "ROI (%)", "Investment Type"],
     ).properties(width=800, height=400)
-    return line_chart
+    return scatter_chart
 
 # Streamlit app
 def main():
@@ -133,10 +123,6 @@ def main():
     st.subheader("Condition Distribution")
     st.altair_chart(create_distribution_chart(df, "Condition", "Property Condition"))
 
-    # Add a map showing property locations
-    st.subheader("Property Locations")
-    st.map(filtered_deals, use_container_width=True)
-
     # Add a scatter plot for ROI vs. Price
     st.subheader("ROI vs. Price")
     scatter_chart = alt.Chart(df).mark_circle().encode(
@@ -147,16 +133,9 @@ def main():
     ).properties(width=800, height=400)
     st.altair_chart(scatter_chart)
 
-    # Additional Charts
-    st.subheader("Bedroom and Bathroom Distribution")
-    st.altair_chart(create_heatmap(df))
-
-    st.subheader("Property Condition Distribution")
-    st.altair_chart(create_distribution_chart(df, "Condition", "Property Condition"))
-
-    st.subheader("ROI Trends Over the Years")
-    st.altair_chart(create_line_chart(df))
+    # Additional Chart - Scatter plot for property locations
+    st.subheader("Property Locations (Scatter Plot)")
+    st.altair_chart(create_scatter_plot(filtered_deals))
 
 if __name__ == "__main__":
     main()
-
